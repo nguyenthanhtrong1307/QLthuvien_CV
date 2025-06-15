@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thư Viện Trực Tuyến</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #007bff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            .form-group input, .form-group select, .form-group button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Thư Viện Trực Tuyến</h1>
+
+        <!-- Quản lý sách -->
+        <div class="section">
+            <h2>Quản Lý Sách</h2>
+            <div class="form-group">
+                <label for="bookTitle">Tiêu đề sách</label>
+                <input type="text" id="bookTitle" placeholder="Nhập tiêu đề sách">
+            </div>
+            <div class="form-group">
+                <label for="bookAuthor">Tác giả</label>
+                <input type="text" id="bookAuthor" placeholder="Nhập tên tác giả">
+            </div>
+            <div class="form-group">
+                <button onclick="addBook()">Thêm Sách</button>
+            </div>
+            <table id="bookTable">
+                <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Tác giả</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="bookList"></tbody>
+            </table>
+        </div>
+
+        <!-- Quản lý người dùng -->
+        <div class="section">
+            <h2>Quản Lý Người Dùng</h2>
+            <div class="form-group">
+                <label for="userName">Tên người dùng</label>
+                <input type="text" id="userName" placeholder="Nhập tên người dùng">
+            </div>
+            <div class="form-group">
+                <button onclick="addUser()">Thêm Người Dùng</button>
+            </div>
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>Tên</th>
+                    </tr>
+                </thead>
+                <tbody id="userList"></tbody>
+            </table>
+        </div>
+
+        <!-- Mượn/Trả sách -->
+        <div class="section">
+            <h2>Mượn/Trả Sách</h2>
+            <div class="form-group">
+                <label for="borrowUser">Người mượn</label>
+                <select id="borrowUser"></select>
+            </div>
+            <div class="form-group">
+                <label for="borrowBook">Sách</label>
+                <select id="borrowBook"></select>
+            </div>
+            <div class="form-group">
+                <button onclick="borrowBook()">Mượn Sách</button>
+                <button onclick="returnBook()">Trả Sách</button>
+            </div>
+            <table id="borrowTable">
+                <thead>
+                    <tr>
+                        <th>Người mượn</th>
+                        <th>Sách</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="borrowList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let books = [];
+        let users = [];
+        let borrows = [];
+
+        function addBook() {
+            const title = document.getElementById('bookTitle').value;
+            const author = document.getElementById('bookAuthor').value;
+            if (title && author) {
+                books.push({ title, author, status: 'Có sẵn' });
+                updateBookList();
+                updateBorrowBookOptions();
+                document.getElementById('bookTitle').value = '';
+                document.getElementById('bookAuthor').value = '';
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin sách!');
+            }
+        }
+
+        function addUser() {
+            const name = document.getElementById('userName').value;
+            if (name) {
+                users.push({ name });
+                updateUserList();
+                updateBorrowUserOptions();
+                document.getElementById('userName').value = '';
+            } else {
+                alert('Vui lòng nhập tên người dùng!');
+            }
+        }
+
+        function borrowBook() {
+            const user = document.getElementById('borrowUser').value;
+            const book = document.getElementById('borrowBook').value;
+            if (user && book) {
+                const bookObj = books.find(b => b.title === book && b.status === 'Có sẵn');
+                if (bookObj) {
+                    bookObj.status = 'Đã mượn';
+                    borrows.push({ user, book, status: 'Đang mượn' });
+                    updateBookList();
+                    updateBorrowList();
+                    updateBorrowBookOptions();
+                } else {
+                    alert('Sách không có sẵn để mượn!');
+                }
+            } else {
+                alert('Vui lòng chọn người dùng và sách!');
+            }
+        }
+
+        function returnBook() {
+            const user = document.getElementById('borrowUser').value;
+            const book = document.getElementById('borrowBook').value;
+            const borrow = borrows.find(b => b.user === user && b.book === book && b.status === 'Đang mượn');
+            if (borrow) {
+                borrow.status = 'Đã trả';
+                const bookObj = books.find(b => b.title === book);
+                bookObj.status = 'Có sẵn';
+                updateBookList();
+                updateBorrowList();
+                updateBorrowBookOptions();
+            } else {
+                alert('Không tìm thấy thông tin mượn sách này!');
+            }
+        }
+
+        function updateBookList() {
+            const bookList = document.getElementById('bookList');
+            bookList.innerHTML = '';
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${book.title}</td><td>${book.author}</td><td>${book.status}</td>`;
+                bookList.appendChild(row);
+            });
+        }
+
+        function updateUserList() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${user.name}</td>`;
+                userList.appendChild(row);
+            });
+        }
+
+        function updateBorrowList() {
+            const borrowList = document.getElementById('borrowList');
+            borrowList.innerHTML = '';
+            borrows.forEach(borrow => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${borrow.user}</td><td>${borrow.book}</td><td>${borrow.status}</td>`;
+                borrowList.appendChild(row);
+            });
+        }
+
+        function updateBorrowUserOptions() {
+            const borrowUser = document.getElementById('borrowUser');
+            borrowUser.innerHTML = '<option value="">Chọn người dùng</option>';
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.name;
+                option.textContent = user.name;
+                borrowUser.appendChild(option);
+            });
+        }
+
+        function updateBorrowBookOptions() {
+            const borrowBook = document.getElementById('borrowBook');
+            borrowBook.innerHTML = '<option value="">Chọn sách</option>';
+            books.filter(book => book.status === 'Có sẵn').forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.title;
+                option.textContent = book.title;
+                borrowBook.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>
